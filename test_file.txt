@@ -1,3 +1,0 @@
-This is a test document for TidyBot.
-It contains information about testing the async/await fix.
-The date is 2025-09-20 and this should be renamed properly.
