@@ -52,7 +52,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "tidybot=main:main",
+            "tidybot2=tidybot_cli_v2:main",
             "tidybot-server=tidybot.ai_service.app.main:main",
         ],
     },
