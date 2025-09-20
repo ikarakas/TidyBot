@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  ai-service:
+    build:
+      context: ./tidybot/ai_service
+      dockerfile: Dockerfile
+    container_name: tidybot-ai-service
+    ports:
+      - "11007:11007"
+    volumes:
+      - ./tidybot/ai_service:/app
+      - tidybot-models:/app/models
+      - tidybot-temp:/app/temp
+      - tidybot-logs:/app/logs
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/tidybot.db
+      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+      - USE_GPU=False
+    depends_on:
+      - redis
+    networks:
+      - tidybot-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: tidybot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - tidybot-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: tidybot-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - ai-service
+    networks:
+      - tidybot-network
+    restart: unless-stopped
+
+volumes:
+  tidybot-models:
+  tidybot-temp:
+  tidybot-logs:
+  redis-data:
+
+networks:
+  tidybot-network:
+    driver: bridge
