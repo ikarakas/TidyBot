@@ -11,11 +11,11 @@ fi
 
 # Build the Docker image
 echo "📦 Building Docker image..."
-docker-compose build
+docker compose build
 
 # Start the services
 echo "🎯 Starting services..."
-docker-compose up -d
+docker compose up -d
 
 # Wait for services to be ready
 echo "⏳ Waiting for services to start..."
@@ -31,12 +31,12 @@ if curl -f http://localhost:11007/health > /dev/null 2>&1; then
     echo "   • Web Frontend: http://localhost:80"
     echo ""
     echo "📊 Container status:"
-    docker-compose ps
+    docker compose ps
 else
     echo "⚠️ TidyBot failed to start. Check logs:"
-    echo "   docker-compose logs ai-service"
+    echo "   docker compose logs ai-service"
 fi
 
 echo "================================"
 echo "To stop: ./scripts/docker-stop.sh"
-echo "To view logs: docker-compose logs -f"
+echo "To view logs: docker compose logs -f"

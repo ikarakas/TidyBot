@@ -3,12 +3,14 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
+    g++ \
+    gcc \
     tesseract-ocr \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     tesseract-ocr-spa \
     tesseract-ocr-deu \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
@@ -30,4 +32,4 @@ ENV TESSERACT_PATH=/usr/bin/tesseract
 
 EXPOSE 11007
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "11007", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "11007"]

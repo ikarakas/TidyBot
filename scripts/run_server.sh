@@ -3,8 +3,10 @@
 echo "🚀 Starting TidyBot Server..."
 echo "================================"
 
-# Change to AI service directory
-cd tidybot/ai_service
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Navigate to the project root then to AI service directory
+cd "$SCRIPT_DIR/../tidybot/ai_service"
 
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
