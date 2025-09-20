@@ -39,40 +39,63 @@ TidyBot/
 ## Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Docker and Docker Compose
+- Python 3.8+
+- Docker and Docker Compose (optional)
 - Tesseract OCR
 
-### Installation
+### Installation Methods
 
-1. Clone the repository:
+#### Method 1: Quick Start (No Installation)
 ```bash
+# Clone the repository
 git clone https://github.com/yourusername/tidybot.git
 cd tidybot
+
+# Run directly with scripts
+./scripts/run_server.sh        # Start server
+./scripts/stop_server.sh       # Stop server
 ```
 
-2. Install dependencies:
+#### Method 2: Install as Python Package (Recommended for Users)
 ```bash
-cd tidybot/ai_service
-pip install -r requirements.txt
+# Install TidyBot globally
+pip install .
+
+# Now you can run from anywhere:
+tidybot                        # Start TidyBot
+tidybot-server                 # Start just the server
 ```
 
-3. Set up environment variables:
+#### Method 3: Development Install (For Contributors)
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+# Install in editable mode with dev tools
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/
+
+# Format code
+black .
 ```
 
-4. Run with Docker:
+#### Method 4: Docker Deployment (Production)
 ```bash
+# Start with Docker
+./scripts/docker-start.sh
+
+# Stop Docker
+./scripts/docker-stop.sh
+
+# Or use docker-compose directly
 docker-compose up -d
 ```
 
-Or run locally:
-```bash
-cd tidybot/ai_service
-uvicorn app.main:app --reload
-```
+### When to use setup.py?
+
+- **End Users**: Run `pip install .` to install TidyBot as a command-line tool
+- **Developers**: Run `pip install -e ".[dev]"` for development with hot-reload
+- **Package Distribution**: Run `python setup.py sdist bdist_wheel` to create distributable packages
+- **CI/CD**: Use setup.py in automated deployments
 
 ## API Documentation
 
