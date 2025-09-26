@@ -1,7 +1,7 @@
 services:
   ai-service:
     build:
-      context: ./tidybot/ai_service
+      context: .
       dockerfile: Dockerfile
     container_name: tidybot-ai-service
     ports:

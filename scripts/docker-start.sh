@@ -28,7 +28,6 @@ if curl -f http://localhost:11007/health > /dev/null 2>&1; then
     echo "🌐 Services:"
     echo "   • API Server: http://localhost:11007"
     echo "   • API Docs: http://localhost:11007/docs"
-    echo "   • Web Frontend: http://localhost:80"
     echo ""
     echo "📊 Container status:"
     docker compose ps

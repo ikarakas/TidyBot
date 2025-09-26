@@ -1,5 +1,5 @@
 # TidyBot Docker Image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Download NLTK data
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+
+# Download spaCy language model
+RUN python -m spacy download en_core_web_sm
 
 # Copy application code
 COPY tidybot/ai_service /app/tidybot/ai_service
