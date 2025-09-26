@@ -15,7 +15,7 @@ TidyBot uses AI to automatically analyze, rename, and organize your files based 
 ### Install & Run
 ```bash
 # Install dependencies
-./install_cli.sh
+./scripts/install_cli.sh
 
 # Start server
 tidybot-server
@@ -32,7 +32,7 @@ tidybot index ~/Documents
 pip install -e .
 
 # Start server
-python3 main.py
+python3 scripts/main.py
 
 # Use CLI
 python3 tidybot_cli_v2.py recommend ~/Downloads

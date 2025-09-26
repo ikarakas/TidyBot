@@ -19,7 +19,7 @@ def main():
         sys.exit(1)
 
     # Change to AI service directory
-    service_path = Path(__file__).parent / "tidybot" / "ai_service"
+    service_path = Path(__file__).parent.parent / "tidybot" / "ai_service"
 
     if not service_path.exists():
         print("❌ TidyBot service not found")

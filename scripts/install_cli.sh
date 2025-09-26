@@ -24,14 +24,14 @@ echo "🔗 Creating convenient aliases..."
 # For bash
 if [ -f ~/.bashrc ]; then
     echo "alias tidybot='python3 $(pwd)/tidybot_cli_v2.py'" >> ~/.bashrc
-    echo "alias tidybot-server='python3 $(pwd)/main.py'" >> ~/.bashrc
+    echo "alias tidybot-server='python3 $(pwd)/scripts/main.py'" >> ~/.bashrc
     echo "✅ Bash aliases configured"
 fi
 
 # For zsh
 if [ -f ~/.zshrc ]; then
     echo "alias tidybot='python3 $(pwd)/tidybot_cli_v2.py'" >> ~/.zshrc
-    echo "alias tidybot-server='python3 $(pwd)/main.py'" >> ~/.zshrc
+    echo "alias tidybot-server='python3 $(pwd)/scripts/main.py'" >> ~/.zshrc
     echo "✅ Zsh aliases configured"
 fi
 
