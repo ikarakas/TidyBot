@@ -18,6 +18,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.lock = asyncio.Lock()
     
     async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for batch endpoints
+        if "/batch/" in request.url.path:
+            return await call_next(request)
+            
         client_ip = request.client.host
         current_time = datetime.now()
         

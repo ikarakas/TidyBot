@@ -1,45 +1,54 @@
 #!/bin/bash
 
-echo "🚀 Installing TidyBot CLI..."
+echo "🚀 Installing TidyBot..."
 
-# Install Python dependencies
-echo "📦 Installing dependencies..."
-pip3 install -r cli_requirements.txt
+# Check Python version
+echo "🐍 Checking Python version..."
+python3 --version
 
-# Create symlink for easier access
-echo "🔗 Creating tidybot command..."
-if [ -d "/usr/local/bin" ]; then
-    sudo ln -sf "$(pwd)/tidybot_cli.py" /usr/local/bin/tidybot
-    echo "✅ Created 'tidybot' command"
-else
-    echo "⚠️  /usr/local/bin not found, creating alias instead"
-    echo "alias tidybot='$(pwd)/tidybot_cli.py'" >> ~/.bashrc
-    echo "alias tidybot='$(pwd)/tidybot_cli.py'" >> ~/.zshrc 2>/dev/null
-fi
+# Install TidyBot package
+echo "📦 Installing TidyBot package..."
+pip3 install -e .
 
-# Setup bash completion
-echo "🎯 Setting up auto-completion..."
+# Install additional dependencies
+echo "📦 Installing AI dependencies..."
+pip3 install -r tidybot/ai_service/requirements.txt
+
+# Install spaCy language model
+echo "🌍 Installing spaCy language model..."
+python3 -m spacy download en_core_web_sm
+
+# Create convenient aliases
+echo "🔗 Creating convenient aliases..."
 
 # For bash
 if [ -f ~/.bashrc ]; then
-    echo 'eval "$(register-python-argcomplete tidybot)"' >> ~/.bashrc
-    echo "✅ Bash auto-completion configured"
+    echo "alias tidybot='python3 $(pwd)/tidybot_cli_v2.py'" >> ~/.bashrc
+    echo "alias tidybot-server='python3 $(pwd)/main.py'" >> ~/.bashrc
+    echo "✅ Bash aliases configured"
 fi
 
 # For zsh
 if [ -f ~/.zshrc ]; then
-    echo 'eval "$(register-python-argcomplete tidybot)"' >> ~/.zshrc
-    echo "✅ Zsh auto-completion configured"
+    echo "alias tidybot='python3 $(pwd)/tidybot_cli_v2.py'" >> ~/.zshrc
+    echo "alias tidybot-server='python3 $(pwd)/main.py'" >> ~/.zshrc
+    echo "✅ Zsh aliases configured"
 fi
 
 echo ""
 echo "✨ Installation complete!"
 echo ""
+echo "🚀 To start TidyBot:"
+echo "  1. Start the server: tidybot-server"
+echo "  2. Use the CLI: tidybot recommend ~/Downloads"
+echo ""
 echo "📋 Usage examples:"
 echo "  tidybot recommend ~/Downloads              # Show recommendations"
 echo "  tidybot auto ~/Documents --dry-run         # Preview auto-rename"
 echo "  tidybot reorganize ~/Desktop               # Reorganize folder"
+echo "  tidybot search \"invoice\"                   # Search files"
+echo "  tidybot index ~/Documents                  # Index directory"
 echo ""
 echo "🔄 Please restart your terminal or run 'source ~/.bashrc' (or ~/.zshrc)"
 echo ""
-echo "📝 For auto-completion to work, press TAB after typing 'tidybot '"
+echo "📖 For more info, see CLI_README.md"

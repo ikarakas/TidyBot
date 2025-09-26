@@ -148,11 +148,11 @@ async def search_query(
     request: Dict[str, Any] = Body(...),
     db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:
-    """POST endpoint for search to match Swift client expectations"""
+    """POST endpoint for search with JSON body support"""
     query = request.get('query', '')
     search_type = request.get('search_type', 'natural')
 
-    # Map Swift search type to backend
+    # Map search type to backend
     if search_type == 'natural':
         search_type = 'natural_language'
 

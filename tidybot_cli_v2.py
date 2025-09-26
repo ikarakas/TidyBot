@@ -409,6 +409,210 @@ class TidyBotCLI:
         if skipped_archives > 0:
             console.print(f"[yellow]Skipped {skipped_archives} archive files[/yellow]")
 
+    def search_mode(self, query: str, search_type: str = "natural", 
+                   limit: int = 20, include_content: bool = False, 
+                   file_types: str = None, categories: str = None,
+                   verbose: bool = False):
+        """Search mode - search indexed files"""
+        console.print(f"\n[bold cyan]🔍 Searching:[/bold cyan] {query}")
+        console.print(f"[dim]Search type: {search_type}[/dim]")
+        console.print(f"[dim]Limit: {limit} results[/dim]\n")
+
+        try:
+            # Prepare search request
+            search_data = {
+                "query": query,
+                "search_type": search_type,
+                "limit": limit,
+                "content_only": include_content
+            }
+
+            # Add filters if specified
+            if file_types:
+                search_data["file_types"] = file_types
+            if categories:
+                search_data["categories"] = categories
+
+            # Make search request
+            response = self.session.post(f"{self.api_url}/search/query", json=search_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                results = data.get('results', [])
+                
+                if not results:
+                    console.print("[yellow]No results found[/yellow]")
+                    return
+
+                # Display results
+                table = Table(title=f"Search Results for '{query}'", show_lines=True)
+                table.add_column("File Path", style="cyan", no_wrap=False)
+                table.add_column("File Name", style="green")
+                table.add_column("Score", justify="center")
+                table.add_column("Category", style="yellow")
+                table.add_column("Size", justify="right")
+                
+                if include_content:
+                    table.add_column("Preview", style="dim", no_wrap=False)
+
+                for result in results:
+                    file_path = result.get('file_path', '')
+                    file_name = result.get('file_name', '')
+                    score = result.get('score', 0)
+                    category = result.get('category', 'unknown')
+                    file_size = result.get('file_size', 0)
+                    preview = result.get('content_preview', '') if include_content else ''
+
+                    # Format file size
+                    if file_size > 1024 * 1024:
+                        size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                    elif file_size > 1024:
+                        size_str = f"{file_size / 1024:.1f} KB"
+                    else:
+                        size_str = f"{file_size} B"
+
+                    # Color code score
+                    if score > 0.8:
+                        score_color = "green"
+                    elif score > 0.6:
+                        score_color = "yellow"
+                    elif score > 0.4:
+                        score_color = "orange1"
+                    else:
+                        score_color = "red"
+
+                    # Truncate preview if too long
+                    if include_content and preview:
+                        preview = preview[:100] + "..." if len(preview) > 100 else preview
+
+                    row_data = [
+                        file_path,
+                        file_name,
+                        f"[{score_color}]{score*100:.0f}%[/{score_color}]",
+                        category,
+                        size_str
+                    ]
+                    
+                    if include_content:
+                        row_data.append(preview)
+
+                    table.add_row(*row_data)
+
+                console.print(table)
+
+                # Summary
+                console.print(f"\n[bold]Summary:[/bold]")
+                console.print(f"  Query: {query}")
+                console.print(f"  Search type: {search_type}")
+                console.print(f"  Results found: {len(results)}")
+                console.print(f"  Total available: {data.get('total', len(results))}")
+
+                if verbose:
+                    console.print(f"\n[dim]API Response:[/dim]")
+                    console.print(json.dumps(data, indent=2))
+
+            else:
+                console.print(f"[red]Search failed: {response.status_code}[/red]")
+                if verbose:
+                    console.print(f"Response: {response.text}")
+
+        except Exception as e:
+            console.print(f"[red]Search error: {e}[/red]")
+            if verbose:
+                import traceback
+                console.print(traceback.format_exc())
+
+    def index_mode(self, directory: Path, recursive: bool = True, 
+                  monitor: bool = False, verbose: bool = False):
+        """Index mode - index a directory for search"""
+        console.print(f"\n[bold cyan]📚 Indexing directory:[/bold cyan] {directory}")
+        console.print(f"[dim]Recursive: {recursive}[/dim]")
+        console.print(f"[dim]Monitor: {monitor}[/dim]\n")
+
+        if not directory.exists():
+            console.print(f"[red]Directory not found: {directory}[/red]")
+            return
+
+        if not directory.is_dir():
+            console.print(f"[red]Path is not a directory: {directory}[/red]")
+            return
+
+        try:
+            # Index directory
+            response = self.session.post(
+                f"{self.api_url}/search/index/directory",
+                params={
+                    "path": str(directory),
+                    "recursive": recursive,
+                    "monitor": monitor
+                }
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                console.print(f"[green]✅ Directory indexed successfully[/green]")
+                console.print(f"  Files indexed: {data.get('files_indexed', 0)}")
+                console.print(f"  Directories scanned: {data.get('directories_scanned', 0)}")
+                console.print(f"  Indexing time: {data.get('indexing_time_ms', 0)}ms")
+                
+                if verbose:
+                    console.print(f"\n[dim]Index details:[/dim]")
+                    console.print(json.dumps(data, indent=2))
+            else:
+                console.print(f"[red]Indexing failed: {response.status_code}[/red]")
+                if verbose:
+                    console.print(f"Response: {response.text}")
+
+        except Exception as e:
+            console.print(f"[red]Indexing error: {e}[/red]")
+            if verbose:
+                import traceback
+                console.print(traceback.format_exc())
+
+    def stats_mode(self, verbose: bool = False):
+        """Stats mode - show search and indexing statistics"""
+        console.print(f"\n[bold cyan]📊 TidyBot Statistics[/bold cyan]\n")
+
+        try:
+            response = self.session.get(f"{self.api_url}/search/stats")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Index statistics
+                index_stats = data.get('index', {})
+                console.print("[bold]Search Index:[/bold]")
+                console.print(f"  Total files indexed: {index_stats.get('total_files', 0)}")
+                console.print(f"  Index size: {index_stats.get('index_size_mb', 0):.2f} MB")
+                console.print(f"  Last updated: {index_stats.get('last_updated', 'Never')}")
+                
+                # Search engine info
+                search_engine = data.get('search_engine', {})
+                console.print(f"\n[bold]Search Engine:[/bold]")
+                console.print(f"  Index path: {search_engine.get('index_path', 'N/A')}")
+                console.print(f"  Semantic search: {'Yes' if search_engine.get('has_semantic_search') else 'No'}")
+                
+                # Offline stats
+                offline_stats = data.get('offline', {})
+                console.print(f"\n[bold]Offline Cache:[/bold]")
+                console.print(f"  Cached files: {offline_stats.get('cached_files', 0)}")
+                console.print(f"  Cache size: {offline_stats.get('cache_size_mb', 0):.2f} MB")
+                console.print(f"  Pending operations: {offline_stats.get('pending_operations', 0)}")
+
+                if verbose:
+                    console.print(f"\n[dim]Full statistics:[/dim]")
+                    console.print(json.dumps(data, indent=2))
+            else:
+                console.print(f"[red]Failed to get statistics: {response.status_code}[/red]")
+                if verbose:
+                    console.print(f"Response: {response.text}")
+
+        except Exception as e:
+            console.print(f"[red]Statistics error: {e}[/red]")
+            if verbose:
+                import traceback
+                console.print(traceback.format_exc())
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -420,11 +624,25 @@ Archive Handling Options:
   keep       - Keep original names for archives
   decompress - Analyze archive contents to suggest better names
 
+Search Types:
+  natural    - Natural language search (default)
+  semantic   - AI-powered semantic similarity search
+  exact      - Exact phrase matching
+  fuzzy      - Fuzzy matching with typos
+  regex      - Regular expression search
+
 Examples:
+  # File organization
   tidybot recommend ~/Downloads --handle-archives skip
-  tidybot recommend ~/Downloads --handle-archives decompress
-  tidybot auto ~/Documents --handle-archives keep --confidence 0.3
-  tidybot auto ~/Screenshots --dry-run --handle-archives skip
+  tidybot auto ~/Documents --confidence 0.7
+  tidybot reorganize ~/Desktop --dry-run
+  
+  # Search functionality
+  tidybot search "amazon invoice" --type natural
+  tidybot search "screenshots from last week" --content
+  tidybot search "financial documents" --type semantic --categories invoice,receipt
+  tidybot index ~/Documents --monitor
+  tidybot stats
         '''
     )
 
@@ -467,6 +685,35 @@ Examples:
                              help='How to handle compressed/archive files (default: skip)')
     reorg_parser.add_argument('--dry-run', action='store_true', help='Preview changes without reorganizing')
     reorg_parser.add_argument('-v', '--verbose', action='store_true', help='Show detailed output')
+
+    # Search mode
+    search_parser = subparsers.add_parser('search', help='Search indexed files by content')
+    search_parser.add_argument('query', type=str, help='Search query')
+    search_parser.add_argument('--type', default='natural',
+                              choices=['natural', 'semantic', 'exact', 'fuzzy', 'regex'],
+                              help='Search type (default: natural)')
+    search_parser.add_argument('--limit', type=int, default=20,
+                              help='Maximum number of results (default: 20)')
+    search_parser.add_argument('--content', action='store_true',
+                              help='Include content preview in results')
+    search_parser.add_argument('--file-types', type=str,
+                              help='Filter by file types (comma-separated: pdf,docx,jpg)')
+    search_parser.add_argument('--categories', type=str,
+                              help='Filter by categories (comma-separated: invoice,screenshot)')
+    search_parser.add_argument('-v', '--verbose', action='store_true', help='Show detailed output')
+
+    # Index mode
+    index_parser = subparsers.add_parser('index', help='Index a directory for search')
+    index_parser.add_argument('directory', type=str, help='Directory to index')
+    index_parser.add_argument('--no-recursive', action='store_true',
+                             help='Do not index subdirectories')
+    index_parser.add_argument('--monitor', action='store_true',
+                             help='Monitor directory for changes')
+    index_parser.add_argument('-v', '--verbose', action='store_true', help='Show detailed output')
+
+    # Stats mode
+    stats_parser = subparsers.add_parser('stats', help='Show search and indexing statistics')
+    stats_parser.add_argument('-v', '--verbose', action='store_true', help='Show detailed output')
 
     # Server settings
     parser.add_argument('--api-url', default=API_BASE_URL, help='TidyBot API URL')
@@ -532,6 +779,26 @@ Examples:
                 console.print("[red]❌ Reorganize mode requires a directory, not a single file[/red]")
                 sys.exit(1)
             console.print("[yellow]Reorganize mode not yet implemented in v2[/yellow]")
+        elif args.mode == 'search':
+            cli.search_mode(
+                query=args.query,
+                search_type=args.type,
+                limit=args.limit,
+                include_content=args.content,
+                file_types=args.file_types,
+                categories=args.categories,
+                verbose=args.verbose
+            )
+        elif args.mode == 'index':
+            index_directory = Path(args.directory).expanduser().resolve()
+            cli.index_mode(
+                directory=index_directory,
+                recursive=not args.no_recursive,
+                monitor=args.monitor,
+                verbose=args.verbose
+            )
+        elif args.mode == 'stats':
+            cli.stats_mode(verbose=args.verbose)
     except KeyboardInterrupt:
         console.print("\n[yellow]Operation cancelled by user[/yellow]")
         sys.exit(0)

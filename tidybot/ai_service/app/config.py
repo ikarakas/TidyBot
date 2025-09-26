@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     cors_origins: str = Field(default="http://localhost:3000,http://localhost:8080")
     
     rate_limit_enabled: bool = Field(default=True)
-    rate_limit_requests: int = Field(default=100)
+    rate_limit_requests: int = Field(default=1000)
     rate_limit_period: int = Field(default=60)
     
     class Config:

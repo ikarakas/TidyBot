@@ -87,7 +87,7 @@ def main():
     
     print("\n" + "="*40)
     print("✅ All tests completed!")
-    print("\n📱 Now you can run the SwiftUI app in Xcode")
+    print("\n📱 Now you can use the CLI interface: tidybot_cli_v2.py")
     print("The app will connect to the backend on port 11007")
 
 if __name__ == "__main__":
