@@ -24,6 +24,10 @@ tidybot-server
 tidybot recommend ~/Downloads
 tidybot search "invoice"
 tidybot index ~/Documents
+
+# Note: If aliases don't work, restart terminal or use:
+# python3 scripts/main.py  # for server
+# python3 tidybot_cli_v2.py  # for CLI
 ```
 
 ### Manual Installation
@@ -34,7 +38,7 @@ pip install -e .
 # Start server
 python3 scripts/main.py
 
-# Use CLI
+# Use CLI (server must be running)
 python3 tidybot_cli_v2.py recommend ~/Downloads
 ```
 
@@ -61,6 +65,8 @@ Key endpoints:
 - `POST /api/v1/files/process` - Process single file
 - `POST /api/v1/batch/process` - Batch processing
 - `POST /api/v1/search/query` - Search files
+- `POST /api/v1/search/index/directory` - Index directory
+- `GET /api/v1/search/index/stats` - Get indexing statistics
 
 ## Requirements
 
